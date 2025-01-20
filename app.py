@@ -34,14 +34,15 @@ outputs = gr.Textbox(label="Reply")
 # Route for password protection
 @app.route('/')
 def home():
-    if request.args.get("password") == PASSWORD:
+    password = request.args.get("password")
+    if password == PASSWORD:
         return gr.Interface(
             fn=chatbot,
             inputs=inputs,
             outputs=outputs,
             title="AI Chatbot",
             description="Ask anything you want"
-        ).launch(inline=True)
+        ).launch(inline=True, share=True)
     else:
         return '''
             <form method="get">
