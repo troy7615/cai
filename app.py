@@ -2,20 +2,19 @@ import openai
 import gradio as gr
 import os
 from flask import Flask, request, redirect, url_for
+import socket
 
-# Initialize Flask
+# Initialize Flask app
 app = Flask(__name__)
 
 # Set your OpenAI API key from environment variables
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Password to access the site
-PASSWORD = os.getenv("ACCESS_PASSWORD", "yourpassword")  # You can set this in Render's environment variables
+# Password for access
+PASSWORD = os.getenv("ACCESS_PASSWORD", "yourpassword")  # Set this in Render's environment variables
 
-# Gradio app function
-messages = [
-    {"role": "system", "content": "You are a helpful and kind AI Assistant."},
-]
+# Gradio chatbot function
+messages = [{"role": "system", "content": "You are a helpful and kind AI Assistant."}]
 
 def chatbot(input):
     if input:
@@ -35,9 +34,9 @@ outputs = gr.Textbox(label="Reply")
 @app.route('/')
 def home():
     password = request.args.get("password")
-
+    
     if password == PASSWORD:
-        # If password is correct, launch Gradio interface
+        # If password is correct, start Gradio interface
         interface = gr.Interface(
             fn=chatbot,
             inputs=inputs,
@@ -45,11 +44,10 @@ def home():
             title="AI Chatbot",
             description="Ask anything you want"
         )
-        # Explicitly start the Gradio interface here
-        interface.launch(share=True, inline=True)
-        return redirect("/gradio")  # Redirect to Gradio interface URL
+        interface.launch(share=True, inline=True, server_port=int(os.getenv("PORT", 8080)))  # Use Render's port here
+        return redirect("/gradio")  # Redirect to Gradio interface if valid password
     else:
-        # If password is incorrect, show password prompt
+        # If password is incorrect, show the password prompt
         return '''
             <form method="get">
                 <label for="password">Password:</label>
@@ -58,6 +56,7 @@ def home():
             </form>
         '''
 
-# Running the Flask app
+# Start Flask app on the dynamic port provided by Render
 if __name__ == '__main__':
-    app.run(debug=False, host="0.0.0.0", port=8080)
+    port = int(os.getenv("PORT", 8080))  # Use Render's provided dynamic port
+    app.run(debug=False, host="0.0.0.0", port=port)
