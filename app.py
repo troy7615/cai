@@ -2,7 +2,6 @@ import openai
 import gradio as gr
 import os
 from flask import Flask, request, redirect, url_for
-import socket
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -37,23 +36,28 @@ def home():
     
     if password == PASSWORD:
         # If password is correct, start Gradio interface
-        interface = gr.Interface(
-            fn=chatbot,
-            inputs=inputs,
-            outputs=outputs,
-            title="AI Chatbot",
-            description="Ask anything you want"
-        )
-        interface.launch(share=True, inline=True, server_port=int(os.getenv("PORT", 8080)))  # Use Render's port here
-        return redirect("/gradio")  # Redirect to Gradio interface if valid password
+        try:
+            interface = gr.Interface(
+                fn=chatbot,
+                inputs=inputs,
+                outputs=outputs,
+                title="AI Chatbot",
+                description="Ask anything you want"
+            )
+            # Explicitly set the port using the environment variable, defaulting to 7860
+            interface.launch(share=True, inline=True, server_port=int(os.getenv("GRADIO_SERVER_PORT", 7860)))
+            return redirect("/gradio")  # Redirect to Gradio interface if valid password
+        except Exception as e:
+            return f"Error launching Gradio interface: {str(e)}"
     else:
-        # If password is incorrect, show the password prompt
+        # If password is incorrect, show the password prompt with an error message
         return '''
             <form method="get">
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password">
                 <input type="submit" value="Submit">
             </form>
+            <p style="color: red;">Incorrect password. Please try again.</p>
         '''
 
 # Start Flask app on the dynamic port provided by Render
