@@ -35,19 +35,21 @@ outputs = gr.Textbox(label="Reply")
 @app.route('/')
 def home():
     password = request.args.get("password")
-    print(f"Received password: {password}")  # Log the received password for debugging
 
     if password == PASSWORD:
-        print("Password correct, launching Gradio interface...")  # Log when password is correct
-        return gr.Interface(
+        # If password is correct, launch Gradio interface
+        interface = gr.Interface(
             fn=chatbot,
             inputs=inputs,
             outputs=outputs,
             title="AI Chatbot",
             description="Ask anything you want"
-        ).launch(inline=True, share=True)
+        )
+        # Explicitly start the Gradio interface here
+        interface.launch(share=True, inline=True)
+        return redirect("/gradio")  # Redirect to Gradio interface URL
     else:
-        print("Password incorrect, prompting user...")  # Log when password is incorrect
+        # If password is incorrect, show password prompt
         return '''
             <form method="get">
                 <label for="password">Password:</label>
