@@ -35,7 +35,10 @@ outputs = gr.Textbox(label="Reply")
 @app.route('/')
 def home():
     password = request.args.get("password")
+    print(f"Received password: {password}")  # Log the received password for debugging
+
     if password == PASSWORD:
+        print("Password correct, launching Gradio interface...")  # Log when password is correct
         return gr.Interface(
             fn=chatbot,
             inputs=inputs,
@@ -44,6 +47,7 @@ def home():
             description="Ask anything you want"
         ).launch(inline=True, share=True)
     else:
+        print("Password incorrect, prompting user...")  # Log when password is incorrect
         return '''
             <form method="get">
                 <label for="password">Password:</label>
